@@ -363,7 +363,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 				}
 			}
 
-			override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) { }
+			override fun error(errorCode: String?, errorMessage: String?, errorDetails: Any?) { }
 
 			override fun notImplemented() { }
 		})
@@ -385,7 +385,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 				prevFlutterEngine = null
 			}
 
-			override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+			override fun error(errorCode: String?, errorMessage: String?, errorDetails: Any?) {
 				prevFlutterEngine?.destroy()
 				prevFlutterEngine = null
 			}
