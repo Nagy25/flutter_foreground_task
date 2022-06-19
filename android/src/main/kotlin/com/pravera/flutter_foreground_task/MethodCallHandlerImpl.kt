@@ -27,6 +27,7 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 
 	override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
 		val reqMethod = call.method
+		val callArguments = call.arguments
 		if (reqMethod.contains("minimizeApp") ||
 				reqMethod.contains("openIgnoreBatteryOptimizationSettings") ||
 				reqMethod.contains("requestIgnoreBatteryOptimization")) {
@@ -49,8 +50,12 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 				result.success(provider.getForegroundServiceManager().isRunningService())
 			"minimizeApp" -> ForegroundServiceUtils.minimizeApp(activity)
 			"launchApp" -> {
-				val args = call.arguments<List<String?>>()
-				ForegroundServiceUtils.launchApp(context, args.getOrNull(0))
+				if (callArguments is List<*>) {
+					val route = callArguments.getOrNull(0)
+					if (route is String?) {
+						ForegroundServiceUtils.launchApp(context, route)
+					}
+				}
 			}
 			"wakeUpScreen" -> ForegroundServiceUtils.wakeUpScreen(context)
 			"isIgnoringBatteryOptimizations" ->
