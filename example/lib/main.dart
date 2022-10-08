@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:isolate';
 
 import 'package:flutter/material.dart';
@@ -37,6 +38,11 @@ class MyTaskHandler extends TaskHandler {
     sendPort?.send(_eventCount);
 
     _eventCount++;
+  }
+
+  @override
+  Future<void> onClose(DateTime timestamp, SendPort? sendPort) async {
+    print('CLOSED');
   }
 
   @override
@@ -104,16 +110,35 @@ class _ExamplePageState extends State<ExamplePage> {
           resType: ResourceType.mipmap,
           resPrefix: ResourcePrefix.ic,
           name: 'launcher',
-          backgroundColor: Colors.orange,
+          backgroundColor: Colors.green,
         ),
-        buttons: [
-          const NotificationButton(id: 'sendButton', text: 'Send'),
-          const NotificationButton(id: 'testButton', text: 'Test'),
+        buttons: const [
+          NotificationButton(
+            id: 'sendButton',
+            text: 'Send',
+            textColor: Colors.green,
+          ),
+          NotificationButton(
+            id: 'testButton',
+            text: 'Test',
+            textColor: Colors.yellow,
+          ),
         ],
       ),
       iosNotificationOptions: const IOSNotificationOptions(
         showNotification: true,
         playSound: false,
+        isPersistent: true,
+        buttons: [
+          IOSNotificationButton(
+            id: 'sendButton',
+            text: 'Send',
+          ),
+          IOSNotificationButton(
+            id: 'testButton',
+            text: 'Test',
+          ),
+        ],
       ),
       foregroundTaskOptions: const ForegroundTaskOptions(
         interval: 5000,
@@ -123,6 +148,43 @@ class _ExamplePageState extends State<ExamplePage> {
         allowWifiLock: true,
       ),
     );
+  }
+
+  Future<void> _updateForegroundTask() async {
+    if (await FlutterForegroundTask.isRunningService) {
+      await FlutterForegroundTask.updateService(
+        notificationTitle: 'Updated Foreground Service is running',
+        notificationText: 'Update Tap to return to the app',
+        androidNotificationOptions:
+            FlutterForegroundTask.androidNotificationOptions.copyWith(
+          buttons: const [
+            NotificationButton(
+              id: 'updatedSendButton',
+              text: 'Updated Send',
+              textColor: Colors.deepPurpleAccent,
+            ),
+            NotificationButton(
+              id: 'updatedTestButton',
+              text: 'Updated Test',
+              textColor: Colors.lightBlue,
+            ),
+          ],
+        ),
+        iosNotificationOptions:
+            FlutterForegroundTask.iosNotificationOptions.copyWith(
+          buttons: const [
+            IOSNotificationButton(
+              id: 'updatedSendButton',
+              text: 'Updated Send',
+            ),
+            IOSNotificationButton(
+              id: 'updatedTestButton',
+              text: 'Updated Test',
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   Future<bool> _startForegroundTask() async {
@@ -180,6 +242,8 @@ class _ExamplePageState extends State<ExamplePage> {
         } else if (message is String) {
           if (message == 'onNotificationPressed') {
             Navigator.of(context).pushNamed('/resume-route');
+          } else {
+            print("Got message: $message");
           }
         } else if (message is DateTime) {
           print('timestamp: ${message.toString()}');
@@ -246,6 +310,7 @@ class _ExamplePageState extends State<ExamplePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           buttonBuilder('start', onPressed: _startForegroundTask),
+          buttonBuilder('update', onPressed: _updateForegroundTask),
           buttonBuilder('stop', onPressed: _stopForegroundTask),
         ],
       ),

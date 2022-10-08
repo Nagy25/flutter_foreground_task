@@ -34,6 +34,9 @@ abstract class TaskHandler {
   /// Called when the task is started.
   Future<void> onStart(DateTime timestamp, SendPort? sendPort);
 
+  /// Called when the user swipes the app off recent apps.
+  Future<void> onClose(DateTime timestamp, SendPort? sendPort);
+
   /// Called when an event occurs.
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort);
 
@@ -56,6 +59,11 @@ class FlutterForegroundTask {
   static late IOSNotificationOptions _iosNotificationOptions;
   static late ForegroundTaskOptions _foregroundTaskOptions;
   static bool _initialized = false;
+
+  static AndroidNotificationOptions get androidNotificationOptions =>
+      _androidNotificationOptions;
+  static IOSNotificationOptions get iosNotificationOptions =>
+      _iosNotificationOptions;
 
   /// Initialize the [FlutterForegroundTask].
   static void init({
@@ -99,12 +107,23 @@ class FlutterForegroundTask {
     String? notificationTitle,
     String? notificationText,
     Function? callback,
-  }) =>
-      FlutterForegroundTaskPlatform.instance.updateService(
-        notificationText: notificationText,
-        notificationTitle: notificationTitle,
-        callback: callback,
-      );
+    AndroidNotificationOptions? androidNotificationOptions,
+    IOSNotificationOptions? iosNotificationOptions,
+  }) {
+    if (androidNotificationOptions != null) {
+      _androidNotificationOptions = androidNotificationOptions;
+    }
+    if (iosNotificationOptions != null) {
+      _iosNotificationOptions = iosNotificationOptions;
+    }
+    return FlutterForegroundTaskPlatform.instance.updateService(
+      notificationText: notificationText,
+      notificationTitle: notificationTitle,
+      callback: callback,
+      androidNotificationOptions: androidNotificationOptions,
+      iosNotificationOptions: iosNotificationOptions,
+    );
+  }
 
   /// Stop the foreground service.
   static Future<bool> stopService() =>
@@ -265,6 +284,9 @@ class FlutterForegroundTask {
           break;
         case 'onEvent':
           await handler.onEvent(timestamp, sendPort);
+          break;
+        case 'onClose':
+          await handler.onClose(timestamp, sendPort);
           break;
         case 'onDestroy':
           await handler.onDestroy(timestamp, sendPort);

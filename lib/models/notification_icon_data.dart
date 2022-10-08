@@ -20,15 +20,22 @@ enum ResourcePrefix {
   img,
 }
 
-/// Data for setting the notification icon.
-class NotificationIconData {
-  /// Constructs an instance of [NotificationIconData].
-  const NotificationIconData({
+/// Data for setting the icon.
+class IconResourceData {
+  /// Constructs an instance of [IconData].
+  const IconResourceData({
     required this.resType,
     required this.resPrefix,
     required this.name,
-    this.backgroundColor,
-  });
+  }) : _backgroundColor = null;
+
+  /// Constructs an instance of [NotificationIconData].
+  const IconResourceData._notificationIcon(
+    this.resType,
+    this.resPrefix,
+    this.name,
+    this._backgroundColor,
+  );
 
   /// The resource type of the notification icon.
   /// If the resource is in the drawable folder, set it to [ResourceType.drawable],
@@ -44,14 +51,14 @@ class NotificationIconData {
   final String name;
 
   /// Notification icon background color.
-  final Color? backgroundColor;
+  final Color? _backgroundColor;
 
   /// Returns the data fields of [NotificationIconData] in JSON format.
   Map<String, dynamic> toJson() {
     String? backgroundColorRgb;
-    if (backgroundColor != null) {
+    if (_backgroundColor != null) {
       backgroundColorRgb =
-          '${backgroundColor!.red},${backgroundColor!.green},${backgroundColor!.blue}';
+          '${_backgroundColor!.red},${_backgroundColor!.green},${_backgroundColor!.blue}';
     }
 
     return {
@@ -61,4 +68,17 @@ class NotificationIconData {
       'backgroundColorRgb': backgroundColorRgb,
     };
   }
+}
+
+/// Data for setting the notification icon.
+class NotificationIconData extends IconResourceData {
+  /// Constructs an instance of [NotificationIconData].
+  const NotificationIconData({
+    required ResourceType resType,
+    required ResourcePrefix resPrefix,
+    required String name,
+    Color? backgroundColor,
+  }) : super._notificationIcon(resType, resPrefix, name, backgroundColor);
+
+  Color? get backgroundColor => _backgroundColor;
 }
